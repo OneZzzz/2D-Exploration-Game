@@ -13,16 +13,16 @@ public class PlayerController : MonoBehaviour
 
 
 
-    public float speed=4.5f;
+    private  float speed=6f;
     public float jumpForce=350;
 
     private int score = 0;
 
-    public Transform checkPoint,forwardCheckPoint;
+    public Transform checkPoint01,checkPoint02,forwardCheckPoint;
 
     Animator anim;
 
-    private bool isFindGem;
+    public bool isFindGem;
 
     public bool isFindKey;
 
@@ -40,6 +40,12 @@ public class PlayerController : MonoBehaviour
         Jump();
         CameraFallow();
         FowardCheck();
+        ReturnStartScene();
+    }
+    void ReturnStartScene()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+            SceneManager.LoadScene("startscene");
     }
 
     void FowardCheck()
@@ -77,6 +83,7 @@ public class PlayerController : MonoBehaviour
                         {
                             isFindKey = true;
                             raycastHit2D.collider.gameObject.GetComponent<TaskNpc>().ElseNpcEvent();
+
                             AudioManager.instance.PlayAudio(AudioManager.instance.key);
                         }
                         else
@@ -105,7 +112,7 @@ public class PlayerController : MonoBehaviour
             anim.SetBool("run", false);
         transform.Translate(Vector2.right * speed * Time.deltaTime*x);
     }
-    bool CheckInGround()
+    bool CheckInGround(Transform checkPoint)
     {
         RaycastHit2D raycastHit2D=  Physics2D.Raycast(checkPoint.position, Vector2.down, 0.05f);
         if (raycastHit2D)
@@ -122,7 +129,7 @@ public class PlayerController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            if (CheckInGround())
+            if (CheckInGround(checkPoint01) || CheckInGround(checkPoint02))
             {
                 GetComponent<Rigidbody2D>().AddForce(Vector2.up * jumpForce);
                 anim.SetTrigger("jump");
@@ -155,12 +162,25 @@ public class PlayerController : MonoBehaviour
             AudioManager.instance.PlayAudio(AudioManager.instance.gem);
             Destroy(collision.gameObject);
         }
-        if (collision.gameObject.CompareTag("enemy"))
+        else if (collision.gameObject.CompareTag("enemy"))
         {
             Destroy(collision.gameObject);
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
-
+        else if (collision.gameObject.CompareTag("startCreat"))
+        {
+            EnemyCreater.instance.StartCreat();
+        }
+        else if (collision.gameObject.CompareTag("stopCreat"))
+        {
+            EnemyCreater.instance.StopCreat() ;
+        }
+        else if (collision.gameObject.CompareTag("endpoint"))
+        {
+            SceneController co= collision.gameObject.GetComponent<SceneController>();
+            if (co == null) return;
+            co.EndPointChangeScene();
+        }
     }
     //private void OnTriggerStay2D(Collider2D collision)
     //{
@@ -194,6 +214,13 @@ public class PlayerController : MonoBehaviour
         {
             Destroy(collision.gameObject);
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+        else if (collision.gameObject.CompareTag("door"))
+        {
+            if (!isFindKey) return;
+            door.eulerAngles = new Vector3(0, 0, 0);
+            boxCollider.enabled = false;
+            AudioManager.instance.PlayAudio(AudioManager.instance.openDoor);
         }
     }
 

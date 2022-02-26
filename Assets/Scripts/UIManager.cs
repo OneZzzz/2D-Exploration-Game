@@ -16,7 +16,9 @@ public class UIManager : MonoBehaviour
     private List<string> diaMessages;
     private int diaIndex;
 
-    public static bool isInDiaState; 
+    public static bool isInDiaState;
+
+    private bool currentIsShow;
 
     private void Start()
     {
@@ -24,17 +26,19 @@ public class UIManager : MonoBehaviour
         scoreText = transform.Find("score").GetComponent<Text>();
         dia = transform.GetChild(1).gameObject;
         diaText = dia.GetComponentInChildren<Text>();
-        dia.GetComponent<Button>().onClick.AddListener(ShowNextDiaMessage);
         dia.SetActive(false);
         ShowScore(0);
     }
-    private void Update()
+    private void LateUpdate()
     {
-        if(Input.GetKeyDown(KeyCode.J) || Input.GetMouseButtonDown(0))
+        if (Input.GetKeyDown(KeyCode.J) || Input.GetMouseButtonDown(0))
         {
+            if (currentIsShow) return;
             ShowNextDiaMessage();
         }
+        currentIsShow = false;
     }
+
 
     public void ShowScore(int score)
     {
@@ -44,6 +48,7 @@ public class UIManager : MonoBehaviour
     public void ShowDialo(List<string> messages)
     {
         if (dia.activeSelf) return;
+        print(messages[0]);
         isInDiaState = true;
         diaMessages = messages;
         diaIndex = 0;
@@ -52,6 +57,7 @@ public class UIManager : MonoBehaviour
     private void ShowNextDiaMessage()
     {
         if (!isInDiaState) return;
+        currentIsShow = true;
         dia.SetActive(true);
         if (diaIndex >= diaMessages.Count)
         {

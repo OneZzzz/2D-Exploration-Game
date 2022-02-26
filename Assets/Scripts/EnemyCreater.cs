@@ -5,28 +5,55 @@ using UnityEngine;
 public class EnemyCreater : MonoBehaviour
 {
     private GameObject enemy;
-    public float force =300;
+    public float force =260;
 
-    private void Start()
+    public bool isInCreatState;
+    public static EnemyCreater instance;
+    private void Awake()
     {
+        if (instance == null)
+            instance = this;
+    }
+
+
+
+    public void StartCreat()
+    {
+        if (isInCreatState) return;
+        isInCreatState = true;
         enemy = Resources.Load<GameObject>("enemy");
         StartCoroutine(CreaterEnemy());
     }
+    public void StopCreat()
+    {
+        if (!isInCreatState) return;
+        isInCreatState = false;
+        StopAllCoroutines();
+        StopCoroutine(CreaterEnemy());
+    }
+
+
 
     IEnumerator CreaterEnemy()
     {
+        CreatMethod();
         while (true)
         {
 
             yield return new WaitForSeconds(Random.Range(4, 9));
             if (UIManager.isInDiaState)
                 continue;
-            Vector3 creatPos = GetEnemyCreatPosition();
-            GameObject go= Instantiate(enemy, transform);
-            go.transform.position = creatPos;
-            go.GetComponent<Rigidbody2D>().AddForce(Vector2.left * force);
+            CreatMethod();
         }
     }
+    private void CreatMethod()
+    {
+        Vector3 creatPos = GetEnemyCreatPosition();
+        GameObject go = Instantiate(enemy, transform);
+        go.transform.position = creatPos;
+        go.GetComponent<Rigidbody2D>().AddForce(Vector2.left * force);
+    }
+
     private Vector3 GetEnemyCreatPosition()
     {
         Camera ca = Camera.main;
